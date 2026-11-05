@@ -165,7 +165,7 @@ int main() {
     while (1) {
 	    printf("\n-----STUDENT MANAGEMENT SYSTEM-------\n");
 	    printf("1. Add student.\n");
-	    printf("2. View student.\n");
+	    printf("2. View students.\n");
 	    printf("3. Search student.\n");
 	    printf("4. Update student.\n");
 	    printf("5. Delete student.\n");
@@ -195,7 +195,7 @@ int main() {
 		    save_students(students, count);
 	    }
 	    else if (choice == 6) {
-		    printf("Thank you.Please visit again.Goodbye!\n");
+		    printf("Thank you. Please visit again.Goodbye!\n");
 		    break;
 	    }
 	    else {
