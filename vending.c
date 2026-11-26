@@ -17,7 +17,6 @@ typedef struct {
 Product *inventory[MAX_PRODUCTS];
 int product_count = 0;
 
-/* --- Helper Function: Find Product by ID --- */
 int findProduct(int product_id) {
     for (int i = 0; i < product_count; i++) {
         if (inventory[i] != NULL && inventory[i]->product_id == product_id) {
@@ -27,7 +26,6 @@ int findProduct(int product_id) {
     return -1;
 }
 
-/* --- Core Function: Load Product into Inventory --- */
 int loadProduct(int id, const char *name, double price, int qty) {
     if (product_count >= MAX_PRODUCTS) {
         return LOAD_ERROR;
@@ -56,7 +54,6 @@ int loadProduct(int id, const char *name, double price, int qty) {
     return SUCCESS;
 }
 
-/* --- Core Function: Purchase Product --- */
 int buyProduct(int id, int qty) {
     int idx = findProduct(id);
     
@@ -81,7 +78,6 @@ int buyProduct(int id, int qty) {
     return SUCCESS;
 }
 
-/* --- Core Function: Print Inventory Report --- */
 void inventoryReport(void) {
     printf("\n========================================\n");
     printf("            INVENTORY REPORT            \n");
@@ -99,7 +95,6 @@ void inventoryReport(void) {
     printf("========================================\n\n");
 }
 
-/* --- Main Driver Program --- */
 int main(void) {
     char line[256], name[50];
     int id, qty, choice;
@@ -110,29 +105,24 @@ int main(void) {
     printf("========================================\n");
     printf("Loading initial inventory from products.dat...\n");
 
-    // Open the products.dat file for reading
     FILE *file = fopen("products.dat", "r");
     if (file == NULL) {
-        printf("[ERROR] Could not open products.dat file.\n");
-        return 1;
-    }
-
-    // Read initial products from file until "END" or EOF
-    while (fgets(line, sizeof(line), file) != NULL) {
-        if (strncmp(line, "END", 3) == 0) {
-            break;
-        }
-        if (sscanf(line, "%d %49s %lf %d", &id, name, &price, &qty) == 4) {
-            if (loadProduct(id, name, price, qty) != SUCCESS) {
-                printf("[LOG] Failed to load product ID: %d\n", id);
+        printf("[ERROR] Could not open products.dat file. Creating a new one.\n");
+    } else {
+        while (fgets(line, sizeof(line), file) != NULL) {
+            if (strlen(line) <= 1) continue;
+            
+            if (sscanf(line, "%d %49s %lf %d", &id, name, &price, &qty) == 4) {
+                if (loadProduct(id, name, price, qty) != SUCCESS) {
+                    printf("[LOG] Failed to load product ID: %d\n", id);
+                }
             }
         }
+        fclose(file);
     }
-    fclose(file);
 
     printf("Inventory loaded successfully (%d products loaded).\n\n", product_count);
 
-    // Interactive Menu Loop
     do {
         fprintf(stderr, "========================================\n");
         fprintf(stderr, "             MAIN MENU                  \n");
@@ -168,7 +158,14 @@ int main(void) {
                 printf("Enter ID, Name, Price, and Quantity (e.g., 204 Chips 1.25 10): ");
                 if (scanf("%d %49s %lf %d", &id, name, &price, &qty) == 4) {
                     if (loadProduct(id, name, price, qty) == SUCCESS) {
-                        printf("[SUCCESS] Product added successfully!\n");
+                        FILE *outfile = fopen("products.dat", "a");
+                        if (outfile != NULL) {
+                            fprintf(outfile, "%d %s %.2f %d\n", id, name, price, qty);
+                            fclose(outfile);
+                            printf("[SUCCESS] Product added and saved to local storage!\n");
+                        } else {
+                            printf("[WARNING] Product loaded in memory, but failed to save to disk.\n");
+                        }
                     } else {
                         printf("[ERROR] Could not load product (Check if ID already exists or limit reached).\n");
                     }
